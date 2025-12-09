@@ -1,0 +1,220 @@
+!===========================
+!        SWITCH 1
+!===========================
+
+vlan 10
+ name IT
+vlan 20
+ name HR
+
+interface e0/0
+ switchport mode access
+ switchport access vlan 10
+
+interface e0/1
+ switchport mode access
+ switchport access vlan 10
+
+interface e0/2
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+
+interface e0/3
+ switchport mode access
+ switchport access vlan 20
+
+interface e1/0
+ switchport mode access
+ switchport access vlan 20
+
+
+
+!===========================
+!        ROUTER 1
+!===========================
+
+interface e0/0
+ no shutdown
+
+interface e0/0.10
+ encapsulation dot1q 10
+ ip address 10.10.10.1 255.255.255.0
+ no shutdown
+
+interface e0/0.20
+ encapsulation dot1q 20
+ ip address 20.20.20.1 255.255.255.0
+ no shutdown
+
+interface e0/1
+ ip address 30.30.30.1 255.255.255.0
+ no shutdown
+
+interface e0/3
+ ip address 70.70.70.1 255.255.255.0
+ no shutdown
+
+ip dhcp pool d1
+ network 10.10.10.0 255.255.255.0
+ default-router 10.10.10.1
+
+ip dhcp pool d2
+ network 20.20.20.0 255.255.255.0
+ default-router 20.20.20.1
+
+router ospf 1
+ router-id 1.1.1.1
+ network 10.10.10.0 0.0.0.255 area 0
+ network 20.20.20.0 0.0.0.255 area 0
+ network 30.30.30.0 0.0.0.255 area 0
+ network 70.70.70.0 0.0.0.255 area 0
+
+interface e0/0.10
+ ip nat inside
+
+interface e0/0.20
+ ip nat inside
+
+interface e0/1
+ ip nat outside
+
+ip access-list standard NAT
+ permit 10.10.10.0 0.0.0.255
+ permit 20.20.20.0 0.0.0.255
+
+ip nat pool EXT 30.30.30.10 30.30.30.20 netmask 255.255.255.0
+
+ip nat inside source list NAT pool EXT
+
+
+
+!===========================
+!        ROUTER 2
+!===========================
+
+interface e0/0
+ ip address 30.30.30.2 255.255.255.0
+ no shutdown
+
+interface e0/1
+ ip address 40.40.40.1 255.255.255.0
+ no shutdown
+
+router ospf 2
+ router-id 2.2.2.2
+ network 30.30.30.0 0.0.0.255 area 0
+ network 40.40.40.0 0.0.0.255 area 0
+
+
+
+!===========================
+!        ROUTER 3
+!===========================
+
+interface e0/0
+ ip address 70.70.70.2 255.255.255.0
+ no shutdown
+
+interface e0/1
+ ip address 80.80.80.1 255.255.255.0
+ no shutdown
+
+router ospf 3
+ router-id 3.3.3.3
+ network 70.70.70.0 0.0.0.255 area 0
+ network 80.80.80.0 0.0.0.255 area 0
+
+
+
+!===========================
+!        ROUTER 4
+!===========================
+
+interface e0/0
+ ip address 80.80.80.2 255.255.255.0
+ no shutdown
+
+interface e0/1
+ ip address 40.40.40.2 255.255.255.0
+ no shutdown
+
+interface e0/3
+ ip address 50.50.50.1 255.255.255.0
+ no shutdown
+
+interface e1/0
+ ip address 90.90.90.1 255.255.255.0
+ no shutdown
+
+router ospf 4
+ router-id 4.4.4.4
+ network 40.40.40.0 0.0.0.255 area 0
+ network 80.80.80.0 0.0.0.255 area 0
+ network 50.50.50.0 0.0.0.255 area 1
+ network 90.90.90.0 0.0.0.255 area 1
+
+
+
+!===========================
+!        ROUTER 5
+!===========================
+
+interface e0/0
+ ip address 50.50.50.2 255.255.255.0
+ no shutdown
+
+interface e0/1
+ ip address 60.60.60.1 255.255.255.0
+ no shutdown
+
+router ospf 5
+ router-id 5.5.5.5
+ network 50.50.50.0 0.0.0.255 area 1
+ network 60.60.60.0 0.0.0.255 area 1
+
+
+
+!===========================
+!        ROUTER 6
+!===========================
+
+interface e0/0
+ ip address 90.90.90.2 255.255.255.0
+ no shutdown
+
+interface e0/1
+ ip address 100.100.100.1 255.255.255.0
+ no shutdown
+
+router ospf 6
+ router-id 6.6.6.6
+ network 90.90.90.0 0.0.0.255 area 1
+ network 100.100.100.0 0.0.0.255 area 1
+
+
+
+!===========================
+!        ROUTER 7
+!===========================
+
+interface e0/0
+ ip address 60.60.60.2 255.255.255.0
+ no shutdown
+
+interface e0/1
+ ip address 100.100.100.2 255.255.255.0
+ no shutdown
+
+interface e1/0
+ ip address 110.110.110.1 255.255.255.0
+ no shutdown
+
+router ospf 7
+ router-id 7.7.7.7
+ network 60.60.60.0 0.0.0.255 area 1
+ network 100.100.100.0 0.0.0.255 area 1
+
+default-information originate
+ex
+
+ip route 0.0.0.0 0.0.0.0 192.168.1.2
